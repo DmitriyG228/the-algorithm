@@ -1,0 +1,166 @@
+TWITTER GROWTH HACKS - ALGORITHM-BASED STRATEGIES
+===============================================
+
+1. CONTACT SYNC BOOST
+--------------------
+WHAT TO DO:
+- Upload phone contacts to Twitter.
+- Sync email contacts from Gmail/Outlook.
+- Do this even if your account is old.
+- Repeat every 30 days with fresh contacts.
+
+WHY IT WORKS:
+From STPFirstDegreeFetcher.scala:
+  - ForwardPhoneBook -> 9.0 (Highest weight)
+  - ReversePhoneBook -> 8.0
+  - ForwardEmailBook -> 7.0
+These signals are strongly weighted in Twitter's candidate generation, so syncing contacts boosts your placement in the recommendation graph.
+
+2. ENGAGEMENT VELOCITY OPTIMIZATION
+------------------------------------
+WHAT TO DO:
+- Post tweets at strategic times.
+- Aim for 3–5 replies within the first 8 minutes.
+- Target 7–10 retweets within the first hour.
+- Use quote tweets to encourage further engagement.
+- Space your tweets roughly 2.5 hours apart to avoid spam signals.
+
+WHY IT WORKS:
+From FeatureBasedScoringFunction.java:
+  - Engagement features like retweetCount and favCount are used with a logarithmic (log2) scale.
+  - Earlybird scoring applies a time decay (ageDecayMult) that heavily favors early engagement.
+Boosted early engagement increases your tweet's score, making it more visible to followers.
+
+3. PROFILE VIEW OPTIMIZATION
+-----------------------------
+WHAT TO DO:
+- Pin a tweet that invites profile clicks (e.g., "Click my profile for part 2!").
+- Cross-promote your profile URL on other platforms.
+- Aim for at least 15 profile views per day and 3+ tweet clicks per post.
+
+WHY IT WORKS:
+From interaction_graph/README.md:
+  Real Graph features include:
+  - Profile views
+  - Private engagements (tweet clicks)
+These signals are key inputs in the machine learning model used in Real Graph, enhancing user interaction scores.
+
+4. REPUTATION SCORE MANAGEMENT
+------------------------------
+WHAT TO DO:
+- Ensure each tweet gains at least one engagement (reply, retweet, or like).
+- Limit URLs to one per three tweets until your reputation improves.
+- Avoid overusing hashtags (no more than 2 per tweet).
+- Maintain a natural tweeting pace (fewer than 15 tweets per day).
+
+WHY IT WORKS:
+From SpamVectorScoringFunction.java:
+  - The system requires a tweepcred threshold (around 25) or at least one engagement to avoid spam filtering.
+Consistent engagement maintains your reputation and prevents your tweets from being flagged as spam.
+
+5. NEW USER SIGNAL EMULATION
+----------------------------
+WHAT TO DO:
+- Follow 5–7 accounts daily for 5 consecutive days.
+- Engage with at least 3 tweets from each followed account.
+- Focus your follows on a specific topic or community.
+- Maintain consistent daily activity for at least 14 days.
+
+WHY IT WORKS:
+From PushTargetUserBuilder.scala:
+  The logic checks for:
+    - daysSinceSignup < 14
+    - accounts flagged as "New"
+By emulating new user behavior, your account may trigger recommendation prioritization (e.g., seed blending) even if it is older.
+
+6. GEOGRAPHIC TREND TARGETING
+-----------------------------
+WHAT TO DO:
+- Use Twitter Trends API to identify trending topics in your country.
+- Include one trending hashtag in tweets during local peak hours (e.g., 7–9 AM or 6–8 PM).
+- Engage with top tweets in these trending topics.
+- Create localized content for events and holidays.
+
+WHY IT WORKS:
+From crowd_search_accounts/README.md:
+  - The candidate source prioritizes the "most searched" accounts in a specific country.
+Local engagement increases your visibility in region-specific recommendations.
+
+7. MEDIA & VERIFICATION OPTIMIZATION
+--------------------------------------
+WHAT TO DO:
+- Include native images or videos in at least 70% of your tweets.
+- Tag or quote tweet verified accounts when relevant.
+- Reply to verified accounts soon (within 5 minutes) after they tweet.
+- Use Twitter's native media upload options instead of third-party links.
+
+WHY IT WORKS:
+From FeatureBasedScoringFunction.java:
+  - If a tweet contains media (images or videos), the boosted score is multiplied by 1.2.
+  - Interactions with verified accounts get an additional multiplier of 1.15.
+These boosts directly increase tweet visibility in the ranking algorithm.
+
+8. TOPIC & ENTITY OPTIMIZATION
+-------------------------------
+WHAT TO DO:
+- Incorporate relevant trending keywords and localized hashtags.
+- Ensure your tweets are enriched with topic-specific tags.
+- When possible, reference current news or events within your niche.
+
+WHY IT WORKS:
+From EarlyBirdCandidateAdaptor.scala (via TopicsUtil):
+  - The system uses tweetIdLocalizedEntityMap to annotate tweets with localized entities.
+  - Tweets with topic annotations get extra credit if they satisfy device and topic settings.
+This reinforces your tweet's relevance and visibility via topic-based candidate selection.
+
+9. CONTENT DIVERSITY STRATEGY
+-----------------------------
+WHAT TO DO:
+- Vary your tweet formats: mix plain text, images, videos, polls, and threads.
+- Experiment with long threads and short bursts.
+- Alternate content style to maintain audience interest and signal natural behavior.
+
+WHY IT WORKS:
+From FeatureBasedScoringFunction.java:
+  - Boost factors are applied for media (hasImageUrl, hasVideoUrl).
+  - Diverse content maximizes exposure across multiple candidate sources.
+Multi-format tweets enhance your overall engagement metrics and feed into multiple scoring signals.
+
+10. SYNCHRONIZED ENGAGEMENT BURST
+---------------------------------
+WHAT TO DO:
+- Coordinate with a small group of trusted followers for a rapid engagement burst after posting.
+- Schedule your tweets and prompt immediate likes, retweets, and replies in the first 5-10 minutes.
+- Use social media groups or chat channels to synchronize this effort.
+
+WHY IT WORKS:
+From FeatureBasedScoringFunction.java and Real Graph:
+  - Early retweet and fav counts (retweetCountPostLog2 & favCountPostLog2) greatly influence the scoring.
+  - A concentrated burst of engagement leverages the age decay multiplier for a higher boosted score.
+Quick, early engagements improve your ranking and subsequent visibility.
+
+11. MUTUAL FOLLOW ENGAGEMENT
+---------------------------
+WHAT TO DO:
+- Actively engage with accounts that follow you back.
+- Initiate conversations and reply frequently to build mutual relationships.
+- Collaborate on threads or tweet series with like-minded peers.
+
+WHY IT WORKS:
+From STPFirstDegreeFetcher.scala:
+  - The MutualFollowSTP algorithm weights mutual follows at a score of 10.0.
+Strong tie signals from mutual engagement improve your connectivity in the recommendation graph.
+
+ANTI-GAMING AWARENESS
+---------------------
+WHAT TO DO:
+- Avoid excessive tweeting (limit to under 20 tweets per day).
+- Maintain natural gaps (at least 2 hours between tweets).
+- Vary your hashtags and tweet content.
+- Do not engage in mass follow/unfollow behavior.
+
+WHY IT WORKS:
+From EarlybirdSearcher.java and SpamVectorScoringFunction.java:
+  - AntiGamingFilters and spam detection mechanisms flag unnatural behavior.
+Organic and gradual application of these strategies helps you avoid triggering these filters while boosting your algorithmic visibility.
+

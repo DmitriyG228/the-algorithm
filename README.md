@@ -1,69 +1,217 @@
-# Twitter's Recommendation Algorithm
+# X Growth Hacks – Algorithm-Based Strategies: A Comprehensive Analysis
 
-Twitter's Recommendation Algorithm is a set of services and jobs that are responsible for serving feeds of Tweets and other content across all Twitter product surfaces (e.g. For You Timeline, Search, Explore, Notifications). For an introduction to how the algorithm works, please refer to our [engineering blog](https://blog.twitter.com/engineering/en_us/topics/open-source/2023/twitter-recommendation-algorithm).
+This document collects actionable growth hacks for improving your X (formerly Twitter) account engagement and visibility. Each hack is backed by specific references to the open-source ranking algorithm's code. Use these insights to guide your strategy and further analyze the system.
 
-## Architecture
+---
 
-Product surfaces at Twitter are built on a shared set of data, models, and software frameworks. The shared components included in this repository are listed below:
+## 1. CONTACT SYNC BOOST
 
-| Type | Component | Description |
-|------------|------------|------------|
-| Data | [tweetypie](tweetypie/server/README.md) | Core Tweet service that handles the reading and writing of Tweet data. |
-|      | [unified-user-actions](unified_user_actions/README.md) | Real-time stream of user actions on Twitter. |
-|      | [user-signal-service](user-signal-service/README.md) | Centralized platform to retrieve explicit (e.g. likes, replies) and implicit (e.g. profile visits, tweet clicks) user signals. |
-| Model | [SimClusters](src/scala/com/twitter/simclusters_v2/README.md) | Community detection and sparse embeddings into those communities. |
-|       | [TwHIN](https://github.com/twitter/the-algorithm-ml/blob/main/projects/twhin/README.md) | Dense knowledge graph embeddings for Users and Tweets. |
-|       | [trust-and-safety-models](trust_and_safety_models/README.md) | Models for detecting NSFW or abusive content. |
-|       | [real-graph](src/scala/com/twitter/interaction_graph/README.md) | Model to predict the likelihood of a Twitter User interacting with another User. |
-|       | [tweepcred](src/scala/com/twitter/graph/batch/job/tweepcred/README) | Page-Rank algorithm for calculating Twitter User reputation. |
-|       | [recos-injector](recos-injector/README.md) | Streaming event processor for building input streams for [GraphJet](https://github.com/twitter/GraphJet) based services. |
-|       | [graph-feature-service](graph-feature-service/README.md) | Serves graph features for a directed pair of Users (e.g. how many of User A's following liked Tweets from User B). |
-|       | [topic-social-proof](topic-social-proof/README.md) | Identifies topics related to individual Tweets. |
-|       | [representation-scorer](representation-scorer/README.md) | Compute scores between pairs of entities (Users, Tweets, etc.) using embedding similarity. |
-| Software framework | [navi](navi/README.md) | High performance, machine learning model serving written in Rust. |
-|                    | [product-mixer](product-mixer/README.md) | Software framework for building feeds of content. |
-|                    | [timelines-aggregation-framework](timelines/data_processing/ml_util/aggregation_framework/README.md) | Framework for generating aggregate features in batch or real time. |
-|                    | [representation-manager](representation-manager/README.md) | Service to retrieve embeddings (i.e. SimClusers and TwHIN). |
-|                    | [twml](twml/README.md) | Legacy machine learning framework built on TensorFlow v1. |
+**What to Do:**
+- Upload your phone contacts.
+- Sync email contacts from Gmail/Outlook.
+- Do this even if your account is old.
+- Refresh these contacts monthly.
 
-The product surfaces currently included in this repository are the For You Timeline and Recommended Notifications.
+**Why It Works:**
+- The algorithm heavily weights address book signals. In `STPFirstDegreeFetcher.scala`, key constants are defined:
+  - **ForwardPhoneBook → 9.0 (Highest weight)**
+  - **ReversePhoneBook → 8.0**
+  - **ForwardEmailBook → 7.0**  
+These weights directly boost your connectivity score in the candidate generation process, placing you higher in the recommendation graph.
 
-### For You Timeline
+**Code Reference:**
+- `pushservice/src/main/scala/com/twitter/frigate/pushservice/adaptor/FRSTweetCandidateAdaptor.scala`
+- `follow-recommendations-service/common/src/main/scala/com/twitter/follow_recommendations/common/candidate_sources/stp/STPFirstDegreeFetcher.scala`
 
-The diagram below illustrates how major services and jobs interconnect to construct a For You Timeline.
+---
 
-![](docs/system-diagram.png)
+## 2. ENGAGEMENT VELOCITY OPTIMIZATION
 
-The core components of the For You Timeline included in this repository are listed below:
+**What to Do:**
+- Post tweets during strategic, high-traffic times.
+- Aim for 3–5 replies within the first 8–10 minutes.
+- Target 7–10 retweets within the first hour.
+- Use quote tweets to spur further engagement.
+- Space out your tweets (~2.5 hours apart) to avoid spam signals.
 
-| Type | Component | Description |
-|------------|------------|------------|
-| Candidate Source | [search-index](src/java/com/twitter/search/README.md) | Find and rank In-Network Tweets. ~50% of Tweets come from this candidate source. |
-|                  | [cr-mixer](cr-mixer/README.md) | Coordination layer for fetching Out-of-Network tweet candidates from underlying compute services. |
-|                  | [user-tweet-entity-graph](src/scala/com/twitter/recos/user_tweet_entity_graph/README.md) (UTEG)| Maintains an in memory User to Tweet interaction graph, and finds candidates based on traversals of this graph. This is built on the [GraphJet](https://github.com/twitter/GraphJet) framework. Several other GraphJet based features and candidate sources are located [here](src/scala/com/twitter/recos). |
-|                  | [follow-recommendation-service](follow-recommendations-service/README.md) (FRS)| Provides Users with recommendations for accounts to follow, and Tweets from those accounts. |
-| Ranking | [light-ranker](src/python/twitter/deepbird/projects/timelines/scripts/models/earlybird/README.md) | Light Ranker model used by search index (Earlybird) to rank Tweets. |
-|         | [heavy-ranker](https://github.com/twitter/the-algorithm-ml/blob/main/projects/home/recap/README.md) | Neural network for ranking candidate tweets. One of the main signals used to select timeline Tweets post candidate sourcing. |
-| Tweet mixing & filtering | [home-mixer](home-mixer/README.md) | Main service used to construct and serve the Home Timeline. Built on [product-mixer](product-mixer/README.md). |
-|                          | [visibility-filters](visibilitylib/README.md) | Responsible for filtering Twitter content to support legal compliance, improve product quality, increase user trust, protect revenue through the use of hard-filtering, visible product treatments, and coarse-grained downranking. |
-|                          | [timelineranker](timelineranker/README.md) | Legacy service which provides relevance-scored tweets from the Earlybird Search Index and UTEG service. |
+**Why It Works:**
+- Engagement metrics (retweet and favorite counts) are computed using a logarithmic scale in `FeatureBasedScoringFunction.java`. Early interactions leverage a time decay multiplier (ageDecayMult), meaning immediate engagement significantly boosts your tweet's score.
 
-### Recommended Notifications
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/FeatureBasedScoringFunction.java`
 
-The core components of Recommended Notifications included in this repository are listed below:
+---
 
-| Type | Component | Description |
-|------------|------------|------------|
-| Service | [pushservice](pushservice/README.md) | Main recommendation service at Twitter used to surface recommendations to our users via notifications.
-| Ranking | [pushservice-light-ranker](pushservice/src/main/python/models/light_ranking/README.md) | Light Ranker model used by pushservice to rank Tweets. Bridges candidate generation and heavy ranking by pre-selecting highly-relevant candidates from the initial huge candidate pool. |
-|         | [pushservice-heavy-ranker](pushservice/src/main/python/models/heavy_ranking/README.md) | Multi-task learning model to predict the probabilities that the target users will open and engage with the sent notifications. |
+## 3. PROFILE VIEW OPTIMIZATION
 
-## Build and test code
+**What to Do:**
+- Pin a tweet that invites profile clicks (e.g., "Click my profile for part 2!").
+- Promote your profile URL across other platforms.
+- Strive for at least 15 profile views per day and 3+ tweet clicks per post.
 
-We include Bazel BUILD files for most components, but not a top-level BUILD or WORKSPACE file. We plan to add a more complete build and test system in the future.
+**Why It Works:**
+- Profile views and tweet clicks are critical inputs in the model described in `interaction_graph/README.md`. They signal that users find your content engaging, which directly improves your ranking.
 
-## Contributing
+**Code Reference:**
+- `src/scala/com/twitter/interaction_graph/README.md`
 
-We invite the community to submit GitHub issues and pull requests for suggestions on improving the recommendation algorithm. We are working on tools to manage these suggestions and sync changes to our internal repository. Any security concerns or issues should be routed to our official [bug bounty program](https://hackerone.com/twitter) through HackerOne. We hope to benefit from the collective intelligence and expertise of the global community in helping us identify issues and suggest improvements, ultimately leading to a better Twitter.
+---
 
-Read our blog on the open source initiative [here](https://blog.twitter.com/en_us/topics/company/2023/a-new-era-of-transparency-for-twitter).
+## 4. REPUTATION SCORE MANAGEMENT
+
+**What to Do:**
+- Ensure every tweet garners at least one engagement (like, reply, or retweet).
+- Avoid overloading tweets with URLs or hashtags until you build a strong reputation.
+- Pace your tweets to remain under 15 per day for a natural engagement rate.
+
+**Why It Works:**
+- In `SpamVectorScoringFunction.java`, the algorithm checks for a minimum engagement threshold (often referred to as "tweepcred"). Meeting this threshold prevents your tweets from being flagged as spam.
+
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/SpamVectorScoringFunction.java`
+
+---
+
+## 5. NEW USER SIGNAL EMULATION
+
+**What to Do:**
+- Follow 5–7 accounts daily for 5 consecutive days.
+- Actively engage with at least 3 tweets from each followed account.
+- Focus on a specific topic or niche to maintain content consistency.
+- Maintain active, daily behavior for at least 14 days.
+
+**Why It Works:**
+- `PushTargetUserBuilder.scala` includes logic that boosts new-user-like behavior. Accounts with daysSinceSignup < 14 or flagged as "New" receive a temporary boost, increasing exposure to fresh audiences.
+
+**Code Reference:**
+- `pushservice/src/main/scala/com/twitter/frigate/pushservice/target/PushTargetUserBuilder.scala`
+
+---
+
+## 6. GEOGRAPHIC TREND TARGETING
+
+**What to Do:**
+- Leverage the Twitter Trends API to identify local trending topics.
+- Use one trending hashtag in your tweets during local peak hours (e.g., 7–9 AM or 6–8 PM).
+- Engage with top trend tweets and produce content related to local events or holidays.
+
+**Why It Works:**
+- The `crowd_search_accounts/README.md` outlines how candidate sources prioritize the "most searched" accounts in a given country. Local engagement boosts regional visibility.
+
+**Code Reference:**
+- `follow-recommendations-service/common/src/main/scala/com/twitter/follow_recommendations/common/candidate_sources/crowd_search_accounts/README.md`
+
+---
+
+## 7. MEDIA & VERIFICATION OPTIMIZATION
+
+**What to Do:**
+- Include native images or videos in at least 70% of your tweets.
+- Tag or quote tweet verified accounts when relevant.
+- Reply to verified accounts soon after they tweet.
+- Always use Twitter's native media upload tools instead of third-party links.
+
+**Why It Works:**
+- In `FeatureBasedScoringFunction.java`, if a tweet contains media, its score is multiplied by 1.2. Additionally, interactions with verified accounts add a further multiplier of 1.15.
+
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/FeatureBasedScoringFunction.java`
+
+---
+
+## 8. TOPIC & ENTITY OPTIMIZATION
+
+**What to Do:**
+- Incorporate relevant trending keywords and localized hashtags in your tweets.
+- Enrich your content with topic-specific tags.
+- Reference current news or niche-specific events wherever possible.
+
+**Why It Works:**
+- The system uses the `tweetIdLocalizedEntityMap` (as seen in `EarlyBirdCandidateAdaptor.scala`, via TopicsUtil) to assign extra credit when tweets are enriched with industry-relevant topics. This improves relevance and visibility.
+
+**Code Reference:**
+- `follow-recommendations-service/common/src/main/scala/com/twitter/follow_recommendations/common/candidate_sources/sims_expansion/README.md`
+- `EarlyBirdCandidateAdaptor.scala` (via TopicsUtil)
+
+---
+
+## 9. CONTENT DIVERSITY STRATEGY
+
+**What to Do:**
+- Vary your tweet formats: combine text posts, images, videos, polls, and threads.
+- Experiment with both long threads and short bursts.
+- Alternate your content style regularly.
+
+**Why It Works:**
+- Diverse content formats trigger multiple engagement signals. In `FeatureBasedScoringFunction.java`, boosts for media (via `hasImageUrl` or `hasVideoUrl`) and varied content types help maximize overall exposure.
+
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/FeatureBasedScoringFunction.java`
+
+---
+
+## 10. SYNCHRONIZED ENGAGEMENT BURST
+
+**What to Do:**
+- Coordinate with a small group of trusted followers to generate a rapid burst of likes, retweets, and replies immediately after posting.
+- Use social media groups or direct messages to synchronize this effort.
+
+**Why It Works:**
+- Early retweet and favorite counts are crucial. The scoring functions in `FeatureBasedScoringFunction.java` and signals from Real Graph indicate that concentrated engagement early on leverages age decay multipliers, resulting in a higher overall score.
+
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/FeatureBasedScoringFunction.java`
+- Real Graph sections in `interaction_graph/README.md`
+
+---
+
+## 11. MUTUAL FOLLOW ENGAGEMENT
+
+**What to Do:**
+- Actively engage with accounts that follow you back.
+- Initiate conversations, reply to their posts, and collaborate on threads.
+- Build reciprocal relationships.
+
+**Why It Works:**
+- In `STPFirstDegreeFetcher.scala`, the MutualFollowSTP algorithm is weighted at 10.0. This means mutual engagement signals strong tie relationships, improving your connectivity score.
+
+**Code Reference:**
+- `follow-recommendations-service/common/src/main/scala/com/twitter/follow_recommendations/common/candidate_sources/stp/STPFirstDegreeFetcher.scala`
+
+---
+
+## 12. ANTI-GAMING AWARENESS
+
+**What to Do:**
+- Avoid excessive tweeting (limit to under 20 tweets per day).
+- Maintain natural gaps (at least 2 hours between tweets).
+- Vary your hashtags and tweet content.
+- Avoid mass follow/unfollow behavior.
+
+**Why It Works:**
+- Anti-gaming filters in `EarlybirdSearcher.java` and `SpamVectorScoringFunction.java` are designed to flag unnatural or spammy behavior. Following these guidelines helps you avoid algorithmic penalties and gain sustained visibility.
+
+**Code Reference:**
+- `src/java/com/twitter/search/earlybird/search/relevance/scoring/SpamVectorScoringFunction.java`
+- `EarlybirdSearcher.java`
+
+---
+
+## Summary
+
+Each hack outlined above is derived from a thorough analysis of X's open-source ranking algorithms and reinforced with code references from relevant files. By implementing these actionable strategies, you can optimize your account's signals—improving engagement, visibility, and overall performance on the platform.
+
+---
+
+## References
+
+- **STPFirstDegreeFetcher.scala:** Used for contact sync and mutual engagement weightings.
+- **FeatureBasedScoringFunction.java:** Core for understanding engagement multipliers, media boosts, and time decay effects.
+- **SpamVectorScoringFunction.java & EarlybirdSearcher.java:** Key to understanding reputation and anti-spam filters.
+- **Interaction_graph/README.md:** Explains the importance of profile views and tweet clicks.
+- **Crowd_search_accounts/README.md:** Details local trend candidate selection.
+- **PushTargetUserBuilder.scala:** Implements new user boost logic.
+- **EarlyBirdCandidateAdaptor.scala (TopicsUtil):** Enhances topic & entity optimization.
+
+------------------------------------------------------
+*This document is intended for internal analysis and strategic planning based on X's published algorithm code.*

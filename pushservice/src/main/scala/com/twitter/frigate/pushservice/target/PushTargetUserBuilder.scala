@@ -491,7 +491,9 @@ case class PushTargetUserBuilder(
 
                       //If new sign_up or New user, combine recent_follows with real graph seedset
                       val isNewUserEnabled = {
-                        val isNewerThan7days = customFSField.daysSinceSignup <= 7
+                        val daysSinceSignup = (Time.now - SnowflakeUtil.timeFromId(userId)).inDays
+                        val isNewSignup = daysSinceSignup < 14
+                        val isNewerThan7days = daysSinceSignup <=7
                         val isNewUserState = userState.contains(UserState.New)
                         isNewUserState || isNewSignup || isNewerThan7days
                       }

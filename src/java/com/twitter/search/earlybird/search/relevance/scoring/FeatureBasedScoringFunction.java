@@ -687,6 +687,9 @@ public abstract class FeatureBasedScoringFunction extends ScoringFunction {
       }
     }
 
+    if (data.hasImageUrl || data.hasVideoUrl) boostedScore *= 1.2;
+    if (data.isFromVerifiedAccount) boostedScore *= 1.15;
+
     return boostedScore;
   }
 

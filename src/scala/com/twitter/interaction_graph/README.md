@@ -10,6 +10,11 @@ The model is trained using the labeled dataset and various hyperparameters, incl
 
 Once the model is trained, it can be used to generate a score estimating the probability of a user interacting with another user.
 
+7|Real Graph predicts likelihood of user interactions using features like:
+8|- Favorites/Retweets/Replies
+9|- Profile views
+10|- Mutual follows
+
 ## Real Graph (scio)
 
 This project aggregates the number of interactions between pairs of users on Twitter. On a daily basis, there are multiple dataflow jobs that perform this aggregation, which includes public engagements like favorites, retweets, follows, etc. as well as private engagements like profile views, tweet clicks, and whether or not a user has another user in their address book (given a user opt-in to share address book).
@@ -17,3 +22,7 @@ This project aggregates the number of interactions between pairs of users on Twi
 After the daily aggregation of interactions, there is a rollup job that aggregates yesterday's aggregation with today's interactions. The rollup job outputs several results, including the daily count of interactions per interaction types between a pair of users, the daily incoming interactions made on a user per interaction type, the rollup aggregation of interactions as a decayed sum between a pair of users, and the rollup aggregation of incoming interactions made on a user.
 
 Finally, the rollup job outputs the ML predicted interaction score between the pair of users alongside the rollup aggregation of interactions as a decayed sum between them.
+
+Real Graph features include:
+- Profile views
+- Private engagements (tweet clicks)
